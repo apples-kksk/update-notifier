@@ -56,7 +56,12 @@ test.beforeEach(() => {
 
 test.afterEach(() => {
 	process.stdout.isTTY = isTTY;
-	process.env.NODE_ENV = nodeEnv;
+	if (nodeEnv === undefined) {
+		delete process.env.NODE_ENV;
+	} else {
+		process.env.NODE_ENV = nodeEnv;
+	}
+
 	stderr.release();
 	errorLogs = '';
 });

@@ -16,6 +16,7 @@ const createCheckTestContext = async configValues => {
 	const spawnCalls = [];
 	const stores = [];
 	let unrefCalled = false;
+	const cloneConfigValue = value => value && typeof value === 'object' ? {...value} : value;
 
 	class MockConfigStore {
 		constructor(name, defaults) {
@@ -24,7 +25,7 @@ const createCheckTestContext = async configValues => {
 			this.store = new Map(Object.entries({
 				...defaults,
 				...configValues,
-			}));
+			}).map(([key, value]) => [key, cloneConfigValue(value)]));
 			stores.push(this);
 		}
 
@@ -142,8 +143,16 @@ test('check uses cached update information and clears it', async t => {
 	notifier.check();
 
 	t.deepEqual(notifier.update, {
-		...cachedUpdate,
 		current: '0.0.2',
+		latest: '1.0.0',
+		type: 'major',
+		name: 'update-notifier-tester',
+	});
+	t.deepEqual(cachedUpdate, {
+		current: '0.0.1',
+		latest: '1.0.0',
+		type: 'major',
+		name: 'update-notifier-tester',
 	});
 	t.false(stores[0].store.has('update'));
 	t.deepEqual(spawnCalls, []);
