@@ -150,14 +150,24 @@ test('check uses cached update information and clears it', async t => {
 });
 
 test('check skips update checks when opted out', async t => {
-	const {UpdateNotifier, spawnCalls} = await createCheckTestContext({
+	const cachedUpdate = {
+		current: '0.0.1',
+		latest: '1.0.0',
+		type: 'major',
+		name: 'update-notifier-tester',
+	};
+
+	const {UpdateNotifier, stores, spawnCalls} = await createCheckTestContext({
 		lastUpdateCheck: 0,
 		optOut: true,
+		update: cachedUpdate,
 	});
 	const notifier = new UpdateNotifier(generateSettings());
 
 	notifier.check();
 
+	t.is(notifier.update, undefined);
+	t.deepEqual(stores[0].store.get('update'), cachedUpdate);
 	t.deepEqual(spawnCalls, []);
 });
 
